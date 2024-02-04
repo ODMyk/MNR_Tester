@@ -2,9 +2,10 @@
 
 internal class Program
 {
-    static readonly string[] AllowedCommands = { "help", "test", "run" };
-    static readonly string[] AllowedExpressions = { "S", "T", "Z", "J" };
-    static void Main(string[] args)
+    private static readonly string[] AllowedCommands = { "help", "test", "run" };
+    private static readonly string[] AllowedExpressions = { "S", "T", "Z", "J" };
+
+    private static void Main(string[] args)
     {
         if (args.Length < 1 || !AllowedCommands.Contains(args[0].ToLower()))
         {
@@ -24,12 +25,12 @@ internal class Program
             Environment.Exit(0);
         }
 
-        if (args.Length < 2 || args.Length > 3)
+        if (args.Length is < 2 or > 3)
         {
             Console.WriteLine("Wrong arguments count, please use 'help' command to view the usage");
             Environment.Exit(0);
         }
-        var path = args[1];
+        string path = args[1];
         uint limit = 1000;
         if (args.Length == 3)
         {
@@ -48,7 +49,7 @@ internal class Program
             Console.WriteLine($"File\"{path}\" does not exist");
             Environment.Exit(0);
         }
-        var shouldPrintDebug = command == "test";
+        bool shouldPrintDebug = command == "test";
         Console.WriteLine(Proceed(path, limit, shouldPrintDebug));
 
     }
@@ -66,38 +67,33 @@ test {filepath} {limit=1000} - do the same action as run command, but also print
 
     private static int Proceed(string filepath, uint limit, bool shouldPrintDebug)
     {
-        var lines = File.ReadLines(filepath).ToList();
-        var registers = (from el in lines.ElementAt(0).Split(" ") select (uint)BigInteger.Parse(el)).ToList();
-        var index = 1;
+        IList<string> lines = File.ReadLines(filepath).ToList();
+        IList<uint> registers = (from el in lines.ElementAt(0).Split(" ") select (uint)BigInteger.Parse(el)).ToList();
+        int index = 1;
         uint counter = 0;
         while (index < lines.Count && counter <= limit)
         {
             if (shouldPrintDebug)
             {
-                Console.WriteLine(String.Join(" ", registers));
+                Console.WriteLine(string.Join(" ", registers));
             }
 
-            var line = lines.ElementAt(index).Trim();
+            string line = lines.ElementAt(index).Trim();
             index = HandleLine(index, line, registers);
             counter++;
         }
 
         if (shouldPrintDebug)
         {
-            Console.WriteLine(String.Join(" ", registers));
+            Console.WriteLine(string.Join(" ", registers));
         }
 
-        if (counter > limit)
-        {
-            return -1;
-        }
-
-        return (int)registers.ElementAt(0);
+        return counter > limit ? -1 : (int)registers.ElementAt(0);
     }
 
     private static int HandleLine(int lineNumber, string line, IList<uint> registers)
     {
-        var command = line.ElementAt(0).ToString().ToUpper();
+        string command = line.ElementAt(0).ToString().ToUpper();
 
         if (!AllowedExpressions.Contains(command))
         {
@@ -108,7 +104,7 @@ test {filepath} {limit=1000} - do the same action as run command, but also print
         line = line.Replace(" ", "").Remove(0, 2);
         line = line.Remove(line.Length - 1, 1);
 
-        var indexes = (from el in line.Split(',') select int.Parse(el)).ToList();
+        IList<int> indexes = (from el in line.Split(',') select int.Parse(el)).ToList();
 
         switch (command)
         {
